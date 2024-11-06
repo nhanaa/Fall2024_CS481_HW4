@@ -1,0 +1,34 @@
+setting asax scratch directory
+ 
+============================================================
+=====         Summary of your script job               =====
+============================================================
+  The script file is: myscript.sh
+  The time limit is 12:00:00 HH:MM:SS.
+  The target directory is: /home/ualclsd0185/Fall2024_CS481_HW4
+  The working directory is:  /scratch-local/ualclsd0185.RUN_PROCESSES_8_10_16_20_HW4.205991.asax-pbs1
+  The memory limit is: 20gb
+  The job will start running after: 202411051533.23
+  Job Name: RUN_PROCESSES_8_10_16_20_HW4
+  Queue: -q class -W group_list=classq
+  Constraints: 
+  Using  20  cores on master node  asax020.asc.edu
+  Node list:  asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu asax020.asc.edu
+  Cores:  20
+  Command typed:
+/scripts/run_script_mpi myscript.sh     
+  Queue submit command:
+qsub -q class -W group_list=classq -j oe -N RUN_PROCESSES_8_10_16_20_HW4 -a 202411051533.23 -r n -M ntnguyen11@crimson.ua.edu -l walltime=12:00:00 -l select=20:mpiprocs=1:mem=1000mb 
+ 
+Time taken: 201.384 seconds
+Time taken: 201.406 seconds
+Time taken: 201.908 seconds
+Time taken: 162.297 seconds
+Time taken: 160.901 seconds
+Time taken: 161.816 seconds
+Time taken: 102.063 seconds
+Time taken: 101.946 seconds
+Time taken: 102.111 seconds
+Time taken: 82.8331 seconds
+Time taken: 84.8285 seconds
+Time taken: 82.1517 seconds
