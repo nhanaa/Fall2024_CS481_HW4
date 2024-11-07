@@ -1,3 +1,12 @@
+/*
+  Name: Pax Nguyen
+  Email: ntnguyen11@crimson.ua.edu
+  Course Section: CS 481
+  Homework #: 4
+  Instructions to compile the program: mpic++ -g -Wall -o hw4 hw4.cpp
+  Instructions to run the program: mpiexec -n <mumber_of_processes> ./hw4 <board_size> <number_of_generations> <number_of_processes> <output_directory>
+*/
+
 #include <vector>
 #include <mpi.h>
 #include <random>
@@ -39,8 +48,9 @@ void initLocal(vector<int>& localArray, vector<int>& counts, vector<int>& displs
     checkForError(localOk, fname, "Can't allocate temporary vector", comm);
 
     // Init the game of life board
-    srand(time(0));
+
     for (int i = 0; i < boardSize * boardSize; i++) {
+      srand(123|i);
       board[i] = rand() % 2;
     }
 
@@ -178,7 +188,7 @@ void localGameOfLife(vector<int>& localArray, int boardSize, vector<int>& counts
     // Each MPI process sends its rank to reduction, root MPI process collects the result
     bool globalChanged = false;
     MPI_Allreduce(&localChanged, &globalChanged, 1, MPI_C_BOOL, MPI_LOR, comm);
-    if (myRank == 0 && !globalChanged) {
+    if (!globalChanged) {
       cout << "The sum of all flag is " << globalChanged << " after k=" << gen << endl;
       break;
     }
@@ -190,22 +200,22 @@ void localGameOfLife(vector<int>& localArray, int boardSize, vector<int>& counts
     swap(localPortion, newLocalPortion);
 
     #ifdef DEBUG
-    vector<int> gatheredBoard(boardSize * boardSize);
-    for (int i = 1; i <= localRows; i++) {
-      for (int j = 1; j <= localCols; j++) {
-        localArray[idx(i - 1, j - 1, boardSize)] = localPortion[i][j];
-      }
-    }
-    gatherBoard(gatheredBoard, localArray, localSize, boardSize, myRank, counts, displs, comm);
-    if (myRank == 0) {
-      cout << "Process " << myRank << " > Board at generation " << gen + 1 << ":" << endl;
-      for (int i = 0; i < boardSize; i++) {
-        for (int j = 0; j < boardSize; j++) {
-          cout << gatheredBoard[idx(i, j, boardSize)] << " ";
+      vector<int> gatheredBoard(boardSize * boardSize);
+      for (int i = 1; i <= localRows; i++) {
+        for (int j = 1; j <= localCols; j++) {
+          localArray[idx(i - 1, j - 1, boardSize)] = localPortion[i][j];
         }
-        cout << endl;
       }
-    }
+      gatherBoard(gatheredBoard, localArray, localSize, boardSize, myRank, counts, displs, comm);
+      if (myRank == 0) {
+        cout << "Process " << myRank << " > Board at generation " << gen + 1 << ":" << endl;
+        for (int i = 0; i < boardSize; i++) {
+          for (int j = 0; j < boardSize; j++) {
+            cout << gatheredBoard[idx(i, j, boardSize)] << " ";
+          }
+          cout << endl;
+        }
+      }
     #endif
   }
 
@@ -255,18 +265,11 @@ int main(int argc, char **argv) {
   #endif
 
   vector<int> localArray(counts[myRank]);
-
   initLocal(localArray, counts, displs, boardSize, myRank, MPI_COMM_WORLD);
+  auto start = chrono::high_resolution_clock::now();
 
   // Run game of life
-  auto start = chrono::high_resolution_clock::now();
   localGameOfLife(localArray, boardSize, counts, displs, myRank, commSize, numGenerations, MPI_COMM_WORLD);
-  auto end = chrono::high_resolution_clock::now();
-
-  if(myRank == 0) {
-    cout << "Time taken: " << chrono::duration<double>(end - start).count() << " seconds" << endl;
-  }
-
   vector<int> finalBoard;
   if (myRank == 0) {
     finalBoard = vector<int>(boardSize * boardSize);
@@ -274,6 +277,12 @@ int main(int argc, char **argv) {
 
   // Gather the final board
   gatherBoard(finalBoard, localArray, localBoardSize, boardSize, myRank, counts, displs, MPI_COMM_WORLD);
+  auto end = chrono::high_resolution_clock::now();
+
+  if (myRank == 0) {
+    cout << "Time taken: " << chrono::duration<double>(end - start).count() << " seconds" << endl;
+  }
+
   if (myRank == 0) {
     #ifdef DEBUG
       cout << "Process " << myRank << " > Final board:" << endl;
